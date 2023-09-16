@@ -1,6 +1,7 @@
 // HydraBot <https://github.com/msikma/hydrabot>
 // © MIT license
 
+import cloneDeep from 'lodash.clonedeep'
 import merge from 'lodash.merge'
 import compact from 'lodash.compact'
 import ini from 'ini'
@@ -21,7 +22,7 @@ const DEFAULT_SETTINGS = {
  */
 function parseIniContent(content) {
   const parsed = ini.parse(content)
-  return merge(DEFAULT_SETTINGS, JSON.parse(JSON.stringify(parsed)))
+  return merge(cloneDeep(DEFAULT_SETTINGS), JSON.parse(JSON.stringify(parsed)))
 }
 
 /**
