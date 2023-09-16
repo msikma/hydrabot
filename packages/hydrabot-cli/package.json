@@ -1,0 +1,19 @@
+{
+  "name": "hydrabot-cli",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Discord bot for StarCraft servers",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "test": "jest"
+  },
+  "homepage": "https://github.com/msikma/hydrabot",
+  "repository": "https://github.com/msikma/hydrabot",
+  "author": "Michiel Sikma <michiel@sikma.org>",
+  "license": "MIT",
+  "dependencies": {
+    "argparse": "^2.0.1",
+    "hydrabot-core": "^0.1.0"
+  }
+}
