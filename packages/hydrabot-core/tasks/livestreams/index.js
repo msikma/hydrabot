@@ -8,7 +8,6 @@ import {getBotRemoteSettings, getUserRoleMetadata} from '../../lib/remote.js'
 import {staticMessage} from '../../lib/message.js'
 import {makeEmojiDecorator} from '../../lib/remote.js'
 import {formatDynamicTimestamp, formatUserReference} from '../../util/format.js'
-import {inspect} from '../../util/log.js'
 
 const LIVESTREAMS_LOGO = `https://i.imgur.com/kukgWMD.png`
 const LIVESTREAMS_COLOR = 0x6441a5
@@ -28,7 +27,7 @@ function makeUserTwitchLink(userData, isLive, {formatUserEmoji}) {
 /**
  * Returns a list of users.
  */
-function makeUserListMarkdown(userData, isLiveList, fallback, {formatUserEmoji}) {
+function makeUserListMarkdown(userData, isLiveList, isStarCraftList, fallback, {formatUserEmoji}) {
   if (!userData || userData.length === 0) {
     return fallback
   }
@@ -41,7 +40,7 @@ function makeUserListMarkdown(userData, isLiveList, fallback, {formatUserEmoji})
     const raceEmoji = `:${race}:`
     const userName = `${userObject ? formatUserReference(userObject) : user.username}`
     const userTwitchLink = `${makeUserTwitchLink(user, user.isLive, {formatUserEmoji})}`
-    const streamMetadata = user.isLive ? `\n live to ${user.status.viewers} viewer${user.status.viewers === 1 ? '' : 's'}, since ${formatDynamicTimestamp(user.status.startDate, 'R')}` : ``
+    const streamMetadata = user.isLive ? `\n ${isStarCraftList ? `` : `playing ${user.status.gameName} `}live to ${user.status.viewers} viewer${user.status.viewers === 1 ? '' : 's'}, since ${formatDynamicTimestamp(user.status.startDate, 'R')}` : ``
     items.push(formatUserEmoji(`* ${rankEmoji} ${raceEmoji}${userName} - ${userTwitchLink}${streamMetadata}`))
   }
   return items.join('\n')
@@ -68,13 +67,13 @@ function makeLivestreamsEmbed(userData, {taskConfig, formatUserEmoji}) {
   const listSegments = []
   listSegments.push(`Last updated ${formatDynamicTimestamp(new Date(), 't')}.`)
   listSegments.push(`### Currently live`)
-  listSegments.push(`${makeUserListMarkdown(onlineBW, true, listEmpty, {taskConfig, formatUserEmoji})}`)
+  listSegments.push(`${makeUserListMarkdown(onlineBW, true, true, listEmpty, {taskConfig, formatUserEmoji})}`)
   if (onlineOther.length) {
     listSegments.push(`### Playing something else`)
-    listSegments.push(`${makeUserListMarkdown(onlineOther, true, listEmpty, {taskConfig, formatUserEmoji})}`)
+    listSegments.push(`${makeUserListMarkdown(onlineOther, true, false, listEmpty, {taskConfig, formatUserEmoji})}`)
   }
   listSegments.push(`### Offline`)
-  listSegments.push(`${makeUserListMarkdown(offline, true, listEmpty, {taskConfig, formatUserEmoji})}`)
+  listSegments.push(`${makeUserListMarkdown(offline, true, true, listEmpty, {taskConfig, formatUserEmoji})}`)
 
   e.setDescription(listSegments.join('\n'))
 
