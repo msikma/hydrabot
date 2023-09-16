@@ -66,24 +66,18 @@ function makeLivestreamsEmbed(userData, {taskConfig, formatUserEmoji}) {
   // Fallback value if the list is empty.
   const listEmpty = formatUserEmoji(`None. :harold:`)
 
-  e.setDescription(`Last updated ${formatDynamicTimestamp(new Date(), 't')}.`)
-  e.addFields({
-    name: `Currently live`,
-    value: `${makeUserListMarkdown(onlineBW, true, listEmpty, {taskConfig, formatUserEmoji})}`,
-    inline: false
-  })
+  const listSegments = []
+  listSegments.push(`Last updated ${formatDynamicTimestamp(new Date(), 't')}.`)
+  listSegments.push(`### Currently live`)
+  listSegments.push(`${makeUserListMarkdown(onlineBW, true, listEmpty, {taskConfig, formatUserEmoji})}`)
   if (onlineOther.length) {
-    e.addFields({
-      name: `Playing something else`,
-      value: `${makeUserListMarkdown(onlineOther, true, listEmpty, {taskConfig, formatUserEmoji})}`,
-      inline: false
-    })
+    listSegments.push(`### Playing something else`)
+    listSegments.push(`${makeUserListMarkdown(onlineOther, true, listEmpty, {taskConfig, formatUserEmoji})}`)
   }
-  e.addFields({
-    name: `Offline`,
-    value: `${makeUserListMarkdown(offline, true, listEmpty, {taskConfig, formatUserEmoji})}`,
-    inline: false
-  })
+  listSegments.push(`### Offline`)
+  listSegments.push(`${makeUserListMarkdown(offline, true, listEmpty, {taskConfig, formatUserEmoji})}`)
+
+  e.setDescription(listSegments.join('\n'))
 
   return e
 }
