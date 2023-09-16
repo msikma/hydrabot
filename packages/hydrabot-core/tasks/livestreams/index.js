@@ -32,7 +32,6 @@ function makeUserListMarkdown(userData, isLiveList, fallback, {formatUserEmoji})
   if (!userData || userData.length === 0) {
     return fallback
   }
-  const spacer = ['\u2004', '\xa0', ':spacer:', '\xa0', ':spacer:'].join('')
   const items = []
   for (const user of userData) {
     const userObject = user.user
@@ -42,8 +41,8 @@ function makeUserListMarkdown(userData, isLiveList, fallback, {formatUserEmoji})
     const raceEmoji = `:${race}:`
     const userName = `${userObject ? formatUserReference(userObject) : user.username}`
     const userTwitchLink = `${makeUserTwitchLink(user, user.isLive, {formatUserEmoji})}`
-    const streamMetadata = user.isLive ? `\n${spacer}live to ${user.status.viewers} viewer${user.status.viewers === 1 ? '' : 's'}, since ${formatDynamicTimestamp(user.status.startDate, 'R')}` : ``
-    items.push(formatUserEmoji(`• ${rankEmoji} ${raceEmoji}${userName} - ${userTwitchLink}${streamMetadata}`))
+    const streamMetadata = user.isLive ? `\n live to ${user.status.viewers} viewer${user.status.viewers === 1 ? '' : 's'}, since ${formatDynamicTimestamp(user.status.startDate, 'R')}` : ``
+    items.push(formatUserEmoji(`* ${rankEmoji} ${raceEmoji}${userName} - ${userTwitchLink}${streamMetadata}`))
   }
   return items.join('\n')
 }
