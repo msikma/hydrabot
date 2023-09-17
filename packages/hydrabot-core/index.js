@@ -60,6 +60,7 @@ export function HydraBot(args, pkgData, fromCli) {
     log`{yellow HydraBot v{yellowBright ${pkgData.version}}}`
     log`Press ^C to exit`
 
+    await setProcessHandlers()
     await unpackArguments()
     await loadConfig()
     await loadCommands()
@@ -320,6 +321,7 @@ export function HydraBot(args, pkgData, fromCli) {
           }
           catch (err) {
             // TODO: handle errors better.
+            console.log(err)
             state.logger.logWarn`Error during queued task (name={white ${task.manifest.name}}): ${err}`
           }
         }
@@ -381,6 +383,16 @@ export function HydraBot(args, pkgData, fromCli) {
         }
       }
     }
+  }
+
+  /**
+   * Sets handlers for unhandled events.
+   */
+  function setProcessHandlers() {
+    process.on('warning', e => {
+      // TODO: better debugging
+      console.warn(e.stack)
+    })
   }
 
   return {
