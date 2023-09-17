@@ -308,6 +308,7 @@ export function HydraBot(args, pkgData, fromCli) {
         const args = {
           task,
           logger: task.logger,
+          state,
           client: state.client,
           dataConfig: state.dataConfig,
           twitchApiClient: state.twitchApiClient,

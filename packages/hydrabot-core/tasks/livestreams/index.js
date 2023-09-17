@@ -8,6 +8,7 @@ import {getBotRemoteSettings, getUserRoleMetadata} from '../../lib/remote.js'
 import {staticMessage} from '../../lib/message.js'
 import {makeEmojiDecorator} from '../../lib/remote.js'
 import {formatDynamicTimestamp, formatUserReference} from '../../util/format.js'
+import {readGuildCache, writeGuildCache} from '../../util/config.js'
 
 const LIVESTREAMS_LOGO = `https://i.imgur.com/kukgWMD.png`
 const LIVESTREAMS_COLOR = 0x6441a5
@@ -21,6 +22,26 @@ function makeUserTwitchLink(userData, isLive, {formatUserEmoji}) {
   }
   else {
     return `[twitch.tv/${userData.twitchUsername}](${userData.twitchUrl})`
+  }
+}
+
+/**
+ * Returns a string of metadata to add to a user in the list.
+ */
+function makeUserMetadata(user, isLiveList, isStarCraftList) {
+  const items = []
+  if (user.isLive) {
+    if (!isStarCraftList) {
+      items.push(`playing ${user.status.gameName} `)
+    }
+    items.push(`live to ${user.status.viewers} viewer${user.status.viewers === 1 ? '' : 's'}, since ${formatDynamicTimestamp(user.status.startDate, 'R')}`)
+    return `\n ${items.join('')}`
+  }
+  else {
+    if (user.lastLive != null) {
+      items.push(`- last live ${formatDynamicTimestamp(user.lastLive, 'R')}`)
+    }
+    return items.length ? ` ${items.join('')}` : ''
   }
 }
 
@@ -40,7 +61,7 @@ function makeUserListMarkdown(userData, isLiveList, isStarCraftList, fallback, {
     const raceEmoji = `:${race}:`
     const userName = `${userObject ? formatUserReference(userObject) : user.username}`
     const userTwitchLink = `${makeUserTwitchLink(user, user.isLive, {formatUserEmoji})}`
-    const streamMetadata = user.isLive ? `\n ${isStarCraftList ? `` : `playing ${user.status.gameName} `}live to ${user.status.viewers} viewer${user.status.viewers === 1 ? '' : 's'}, since ${formatDynamicTimestamp(user.status.startDate, 'R')}` : ``
+    const streamMetadata = makeUserMetadata(user, isLiveList, isStarCraftList)
     items.push(formatUserEmoji(`* ${rankEmoji} ${raceEmoji}${userName} - ${userTwitchLink}${streamMetadata}`))
   }
   return items.join('\n')
@@ -49,17 +70,25 @@ function makeUserListMarkdown(userData, isLiveList, isStarCraftList, fallback, {
 /**
  * Creates a Discord Embed object displaying a list of livestreams.
  */
-function makeLivestreamsEmbed(userData, {taskConfig, formatUserEmoji}) {
+function makeLivestreamsEmbed(userData, userLastLiveData, {taskConfig, formatUserEmoji}) {
   const e = new EmbedBuilder()
   e.setColor(LIVESTREAMS_COLOR)
   e.setAuthor({name: 'Twitch streams', iconURL: LIVESTREAMS_LOGO})
   e.setTimestamp()
 
+  // Add the date the user was last live at from our cache.
+  const userLiveData = userData.map(user => ({
+    ...user,
+    lastLive: userLastLiveData[user.twitchUsername]
+      ? new Date(userLastLiveData[user.twitchUsername])
+      : null
+  }))
+
   // Filter the users by online/offline, and the online users into whether they're playing StarCraft or not.
-  const online = userData.filter(user => user.isLive)
+  const online = userLiveData.filter(user => user.isLive)
   const onlineBW = online.filter(user => user.status.gameName === 'StarCraft')
   const onlineOther = online.filter(user => user.status.gameName !== 'StarCraft')
-  const offline = userData.filter(user => !user.isLive)
+  const offline = userLiveData.filter(user => !user.isLive)
 
   // Fallback value if the list is empty.
   const listEmpty = formatUserEmoji(`None. :harold:`)
@@ -96,9 +125,28 @@ function combineUserData(settings, status, metadata) {
   return orderBy(users, ['isLive', 'meta.rankOrder', 'meta.raceOrder', 'username'], ['desc', 'asc', 'asc', 'asc'])
 }
 
-async function publishLivestreams(guildData, {n, logger, client, task, dataConfig, twitchApiClient, twitchApiData}) {
+/**
+ * Updates the guild cache with the dates of users that are currently live.
+ */
+async function updateLiveCache(userData, userLastLiveData, guildId, pathCache) {
+  const now = new Date().toISOString()
+
+  // Users that are currently live on Twitch and the current timestamp.
+  const usersCurrentlyLive = Object.fromEntries(userData
+    .filter(user => user.isLive)
+    .map(user => [user.twitchUsername, now]))
+  
+  // Updated list of when users were last live.
+  const lastLive = {...userLastLiveData, ...usersCurrentlyLive}
+
+  return writeGuildCache(pathCache, guildId, {livestreamsLastLive: lastLive})
+}
+
+async function publishLivestreams(guildData, {n, logger, client, state, task, dataConfig, twitchApiClient, twitchApiData}) {
   const guildId = guildData.id
+  const guildCache = await readGuildCache(state.pathCache, guildId)
   const settingsChannelId = guildData.channelIds.settings
+  const guildLastLiveData = guildCache.livestreamsLastLive || {}
 
   const formatUserEmoji = await makeEmojiDecorator(guildId, guildData.emojiMapping, {client})
   const settings = await getBotRemoteSettings(guildId, settingsChannelId, {client})
@@ -107,7 +155,8 @@ async function publishLivestreams(guildData, {n, logger, client, task, dataConfi
   const message = await staticMessage({guildId, channelId: settings.livestreams.channelId}, {client, logger})
 
   const userData = combineUserData(settings, status, metadata)
-  await message.update({content: settings.livestreams.description, embeds: [makeLivestreamsEmbed(userData, {taskConfig: settings.livestreams, formatUserEmoji})]})
+  await updateLiveCache(userData, guildLastLiveData, guildId, state.pathCache)
+  await message.update({content: settings.livestreams.description, embeds: [makeLivestreamsEmbed(userData, guildLastLiveData, {taskConfig: settings.livestreams, formatUserEmoji})]})
   if (n === 0) logger.log`Initial update of the livestreams list`
 }
 
