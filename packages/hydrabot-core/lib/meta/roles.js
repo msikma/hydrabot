@@ -1,6 +1,9 @@
 // HydraBot <https://github.com/msikma/hydrabot>
 // © MIT license
 
+/** Static value for unknown items. */
+const UNKNOWN = 1000
+
 /** Order of StarCraft races. */
 const RACE_ORDER = {
   terran: 0,
@@ -10,7 +13,7 @@ const RACE_ORDER = {
   racepicker: 4,
   racepick_random: 5,
   raceless: 6,
-  unknown: 100
+  unknown: UNKNOWN
 }
 
 /** Order of the ranks. */
@@ -23,7 +26,15 @@ const RANK_ORDER = {
   e: 5,
   f: 6,
   u: 7,
-  unknown: 100
+  unknown: UNKNOWN
+}
+
+/**
+ * Returns all items from the RACE_ORDER or RANK_ORDER lists, except the "unknown" items.
+ */
+function getKnownItems(obj) {
+  const known = Object.fromEntries(Object.entries(obj).filter(([key, value]) => value !== UNKNOWN))
+  return Object.keys(known)
 }
 
 /**
@@ -46,7 +57,7 @@ export function detectRoleType(role) {
  */
 export function detectRankRole(role) {
   const name = role.name.trim()
-  const ranks = ['S', 'A', 'B', 'C', 'D', 'E', 'F', 'U']
+  const ranks = getKnownItems(RANK_ORDER).map(rank => rank.toUpperCase())
   const [rank, label] = name.split(/\s+/)
   if (label !== 'rank') {
     return null
@@ -61,8 +72,8 @@ export function detectRankRole(role) {
  * Returns a given StarCraft race term, if a role represents one.
  */
 export function detectRaceRole(role) {
-  const name = role.name.toLowerCase().trim()
-  const races = ['terran', 'protoss', 'zerg', 'racepick/random', 'raceless']
+  const name = role.name.toLowerCase().trim().replace(/\//g, '_')
+  const races = getKnownItems(RACE_ORDER)
   if (races.includes(name)) {
     return name
   }

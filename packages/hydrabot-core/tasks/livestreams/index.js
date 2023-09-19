@@ -164,7 +164,7 @@ export default {
   manifest: {
     name: 'livestreams',
     description: `Displays who's currently live on Twitch.`,
-    interval: 60000,
+    interval: Math.floor(60000 * 1.75),
     runOnStartup: true
   },
   async run(args) {

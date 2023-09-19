@@ -21,6 +21,7 @@ const DEFAULT_EMOJI_MAPPING = {
   protoss: ['protoss'],
   zerg: ['zerg'],
   random: ['random'],
+  racepick_random: ['random'],
   racepicker: ['racepicker'],
   ranks: ['ranks'],
   ranka: ['ranka'],
