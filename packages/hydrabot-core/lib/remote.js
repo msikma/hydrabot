@@ -75,9 +75,16 @@ export async function fetchGuildEmoji(guildId, emojiMapping, {client}) {
  * Creates a lookup table for a guild's specific emojis.
  */
 function makeEmojiLookup(emojiMapping) {
-  const emojiKeys = Object.keys(emojiMapping)
-  const emojiLookup = Object.values(emojiMapping).map((e, n) => [e[0], emojiKeys[n]])
-  return Object.fromEntries(emojiLookup)
+  const emojiItems = Object.entries(emojiMapping)
+  const emojiLookup = {}
+  for (let n = 0; n < emojiItems.length; ++n) {
+    const item = emojiItems[n]
+    if (!emojiLookup[item[1]]) {
+      emojiLookup[item[1]] = []
+    }
+    emojiLookup[item[1]].push(item[0])
+  }
+  return emojiLookup
 }
 
 /**
@@ -94,8 +101,12 @@ export async function makeEmojiDecorator(guildId, guildMapping = {}, {client}) {
     let output = input
     // First replace all known emoji; they have precedence.
     for (const emoji of knownEmojiList) {
-      const internalName = emojiLookup[emoji.name]
-      output = output.replace(new RegExp(`:${internalName}:`, 'g'), `${formatEmoji(emoji)}`)
+      const internalNames = emojiLookup[emoji.name]
+      for (const internalName of internalNames) {
+        if (output.includes(internalName)) {
+          output = output.replace(new RegExp(`:${internalName}:`, 'g'), `${formatEmoji(emoji)}`)
+        }
+      }
     }
     // After that, replace whatever other emoji the guild has.
     for (const emoji of otherEmojiList) {
