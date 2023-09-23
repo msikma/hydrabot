@@ -4,6 +4,7 @@
 import compact from 'lodash.compact'
 import orderBy from 'lodash.orderby'
 import {extractSettingsFromMessage} from '../util/message.js'
+import {splitDiscordUsername} from '../util/discord.js'
 import {detectRoleType} from './meta/roles.js'
 import {formatEmoji, unwrapCodeBlock} from '../util/format.js'
 
@@ -140,11 +141,18 @@ export async function getBotRemoteSettings(guildId, channelId, {client}) {
  * Retrieves role metadata for a number of users.
  * 
  * The metadata we return is currently limited to their StarCraft race and rank.
+ * 
+ * TODO: fetch in batch.
  */
 export async function getUserRoleMetadata(guildId, users = [], {client}) {
   const guild = client.guilds.cache.get(guildId)
   const metadata = await Promise.all(users.map(async user => {
-    const res = await guild.members.fetch({query: user, limit: 1})
+    const [username, discriminator] = splitDiscordUsername(user)
+    let res = await guild.members.fetch({query: username, limit: 1})
+    if (discriminator !== null) {
+      // If this is an old username with discriminator, filter the list of results to get the right one.
+      res = res.filter(guildMember => guildMember.user.discriminator === discriminator)
+    }
     const memberData = [...res.values()][0]
     if (!memberData) {
       // This happens if the user is not found.

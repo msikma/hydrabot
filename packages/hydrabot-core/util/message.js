@@ -31,6 +31,8 @@ function parseIniContent(content) {
  * The "settings" message is a special message in Discord containing bot settings.
  * Basically, it allows for the bot to receive some configuration from Discord.
  * This is used to e.g. list which streams are displayed in the "now live" list.
+ * 
+ * Note that the # and ; characters need to be escaped with a single backslash.
  */
 export function extractSettingsFromMessage(content) {
   const data = parseIniContent(content)
