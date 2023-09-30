@@ -17,7 +17,7 @@
     "@twurple/api": "^5.2.0",
     "@twurple/auth": "^5.2.0",
     "bwmapimage": "^1.0.1",
-    "bwrepinfo": "^1.0.2",
+    "bwrepinfo": "^1.0.3",
     "chalk": "^5.3.0",
     "chalk-template": "^1.1.0",
     "crc32": "^0.2.2",

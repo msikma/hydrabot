@@ -377,15 +377,15 @@ bwmapimage@^1.0.1:
     sharp "^0.30.3"
     xxhashjs "^0.2.2"
 
-bwrepinfo@^1.0.2:
-  version "1.0.2"
-  resolved "https://registry.yarnpkg.com/bwrepinfo/-/bwrepinfo-1.0.2.tgz#8789643b9c55db27840a8511ca3482bc4661b730"
-  integrity sha512-z0BRVKZMBfXOFklOnJD9Hlfgv6XEIHFbxuVUbD1IWttDeAOq9Zl7ZeGFH2OAUrDINol58KwLBpNpmRdMVLsKZw==
+bwrepinfo@^1.0.3:
+  version "1.0.3"
+  resolved "https://registry.yarnpkg.com/bwrepinfo/-/bwrepinfo-1.0.3.tgz#6ca8f0693f8c43fbda387fdc172eafa6d4cb62c4"
+  integrity sha512-tragiL3y6vcIwghwHwJmTLyX+MRSrEpWUNSs2waKa3g6Ft2RPVDj/ET8LARo5uJlMgm0zztdmrf9uvptlLwK+Q==
   dependencies:
     format-duration "^3.0.2"
     lodash.orderby "^4.6.0"
     pretty-bytes "^6.1.1"
-    screparsed "^0.0.4"
+    screparsed "^0.0.5"
     sctoolsdata "^0.1.5"
 
 call-bind@^1.0.0, call-bind@^1.0.2:
@@ -1350,10 +1350,10 @@ scm-extractor@^1.0.6:
     implode-decoder "^1.0.0"
     stream-splicer "^2.0.0"
 
-screparsed@^0.0.4:
-  version "0.0.4"
-  resolved "https://registry.yarnpkg.com/screparsed/-/screparsed-0.0.4.tgz#38afe0961197444901da718cb86c2b8261bba7ac"
-  integrity sha512-LNhvBQMOkVcoXD4AUza094zOPEPmn0Ef/tjeW0QYkdDicVELnGKe8QANZIolkGKcJmxHcCC2PSMkzo98zGxNvA==
+screparsed@^0.0.5:
+  version "0.0.5"
+  resolved "https://registry.yarnpkg.com/screparsed/-/screparsed-0.0.5.tgz#06e3f328fc55d63db0e1dc2ba9d87420e5604891"
+  integrity sha512-EwdKp0jg2ivwUNXMi6WxOaAfL5FT/1ExTcNOhup7LLlJxI3D2Esaa50mESD4PGKGvG+d3v0VU5zd9I6Hqw7wbQ==
   dependencies:
     binary-parser "^2.2.1"
     smart-buffer "^4.2.0"
