@@ -77,12 +77,17 @@ function makeLivestreamsEmbed(userData, userLastLiveData, {taskConfig, formatUse
   e.setTimestamp()
 
   // Add the date the user was last live at from our cache.
-  const userLiveData = userData.map(user => ({
-    ...user,
-    lastLive: userLastLiveData[user.twitchUsername]
-      ? new Date(userLastLiveData[user.twitchUsername])
-      : null
-  }))
+  const userLiveData = userData
+    .map(user => ({
+      ...user,
+      lastLive: userLastLiveData[user.twitchUsername]
+        ? new Date(userLastLiveData[user.twitchUsername])
+        : null
+    }))
+    // Filter out people who have never been live.
+    .filter(user => user.lastLive !== null)
+    // Limit to 22 users, to avoid potentially exceeding the character limit.
+    .slice(0, 22)
 
   // Filter the users by online/offline, and the online users into whether they're playing StarCraft or not.
   const online = userLiveData.filter(user => user.isLive)
