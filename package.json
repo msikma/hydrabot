@@ -1,5 +1,5 @@
 {
-  "name": "hydrabot",
+  "name": "@dada78641/hydrabot",
   "version": "0.1.0",
   "description": "Discord bot for StarCraft servers",
   "main": "index.js",
