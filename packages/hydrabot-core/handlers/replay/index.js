@@ -3,11 +3,12 @@
 
 import compact from 'lodash.compact'
 import fetch from 'node-fetch'
-import {getBufferRepInfo} from 'bwrepinfo'
+import {getBufferRepInfo} from '@dada78641/bwrepinfo'
 import {BwMapImage} from 'bwmapimage'
+import {escapeMarkdown} from '@discordjs/formatters'
 import {EmbedBuilder, MessageFlags, AttachmentBuilder} from 'discord.js'
 import {makeEmojiDecorator} from '../../lib/remote.js'
-import {wrapCodeBlock, formatFilesize, formatGameDuration} from '../../util/format.js'
+import {wrapCodeBlock, formatFilesize, formatGameDuration, escapeInsideBlock} from '../../util/format.js'
 import {levelsToLinear} from '../../util/image.js'
 
 const BATTLE_NET_LOGO = `https://i.imgur.com/C8izhrY.png`
@@ -90,15 +91,15 @@ function makeReplayEmbed(replayData, attachment, replayImage, formatEmoji) {
   e.setURL(attachment.url)
   e.setTimestamp()
   
-  e.setTitle(formatEmoji(replayData.title))
+  e.setTitle(formatEmoji(escapeMarkdown(replayData.title)))
   // e.setThumbnail('https://i.imgur.com/AfFp7pu.png') // add the map image here
   e.addFields(
-    {name: `Players`, value: `${replayData.players.list.map(player => formatEmoji(player.nameFormatted)).map(str => `• ${str}`).join('\n')}`, inline: false},
-    {name: `Map`, value: `🗺️ ${replayData.map.originalName}`, inline: true},
+    {name: `Players`, value: `${replayData.players.list.map(player => formatEmoji(escapeMarkdown(player.nameFormatted))).map(str => `• ${str}`).join('\n')}`, inline: false},
+    {name: `Map`, value: `🗺️ ${escapeMarkdown(replayData.map.originalName)}`, inline: true},
     {name: `Length`, value: `${replayData.time.duration}`, inline: true},
     {name: `Played`, value: `${replayData.time.startTimeEmoji} ${replayData.time.startTime}, ${replayData.time.startTimeRel}`, inline: false},
     // {name: '\u200b', value: '\u200b', inline: true},
-    {name: `Download`, value: `📁 [${attachment.name} (${replayData.file.size})](${attachment.url})`, inline: false},
+    {name: `Download`, value: `📁 [${(escapeInsideBlock(attachment.name))} (${replayData.file.size})](${attachment.url})`, inline: false},
     {name: `Chat messages (click to reveal)`, value: `${replayData.messages === '' ? `*No messages.*` : replayData.messages}`, inline: false}
   )
 

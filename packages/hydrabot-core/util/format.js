@@ -1,6 +1,7 @@
 // HydraBot <https://github.com/msikma/hydrabot>
 // © MIT license
 
+import {escapeInsideBlock as _escapeInsideBlock} from '@dada78641/bwrepinfo/util/format.js'
 import prettyBytes from 'pretty-bytes'
 import formatDuration from 'format-duration'
 
@@ -31,6 +32,13 @@ export function unwrapCodeBlock(mdRaw) {
   const mdNoSuffix = mdNoPrefix.slice(0, suffix)
   
   return mdNoSuffix
+}
+
+/**
+ * Replaces Markdown control characters to avoid formatting.
+ */
+export function escapeInsideBlock(string) {
+  return _escapeInsideBlock(string)
 }
 
 /**
