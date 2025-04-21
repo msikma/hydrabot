@@ -68,14 +68,9 @@ function makeUserListMarkdown(userData, isLiveList, isStarCraftList, fallback, {
 }
 
 /**
- * Creates a Discord Embed object displaying a list of livestreams.
+ * Returns online and offline user lists for the purposes of making a livestreams embed.
  */
-function makeLivestreamsEmbed(userData, userLastLiveData, {taskConfig, formatUserEmoji}) {
-  const e = new EmbedBuilder()
-  e.setColor(LIVESTREAMS_COLOR)
-  e.setAuthor({name: 'Twitch streams', iconURL: LIVESTREAMS_LOGO})
-  e.setTimestamp()
-
+function getLivestreamsList(userData, userLastLiveData) {
   // Add the date the user was last live at from our cache.
   const userLiveData = userData
     .map(user => ({
@@ -95,6 +90,13 @@ function makeLivestreamsEmbed(userData, userLastLiveData, {taskConfig, formatUse
   const onlineOther = online.filter(user => user.status.gameName !== 'StarCraft')
   const offline = userLiveData.filter(user => !user.isLive)
 
+  return [online, onlineBW, onlineOther, offline]
+}
+
+/**
+ * Returns a Markdown string indicating who's streaming.
+ */
+function getLivestreamsContent(onlineBW, onlineOther, offline, {taskConfig, formatUserEmoji}) {
   // Fallback value if the list is empty.
   const listEmpty = formatUserEmoji(`None. :harold:`)
 
@@ -109,7 +111,23 @@ function makeLivestreamsEmbed(userData, userLastLiveData, {taskConfig, formatUse
   listSegments.push(`### Offline`)
   listSegments.push(`${makeUserListMarkdown(offline, true, true, listEmpty, {taskConfig, formatUserEmoji})}`)
 
-  e.setDescription(listSegments.join('\n'))
+  return listSegments.join('\n')
+}
+
+/**
+ * Creates a Discord Embed object displaying a list of livestreams.
+ */
+function makeLivestreamsEmbed(userData, userLastLiveData, {taskConfig, formatUserEmoji}) {
+  const e = new EmbedBuilder()
+  e.setColor(LIVESTREAMS_COLOR)
+  e.setAuthor({name: 'Twitch streams', iconURL: LIVESTREAMS_LOGO})
+  e.setTimestamp()
+
+  // Obtain lists of online and offline streamers.
+  const [online, onlineBW, onlineOther, offline] = getLivestreamsList(userData, userLastLiveData)
+
+  const livestreamsContent = getLivestreamsContent(onlineBW, onlineOther, offline, {taskConfig, formatUserEmoji})
+  e.setDescription(livestreamsContent)
 
   return e
 }
@@ -161,7 +179,15 @@ async function publishLivestreams(guildData, {n, logger, client, state, task, da
 
   const userData = combineUserData(settings, status, metadata)
   await updateLiveCache(userData, guildLastLiveData, guildId, state.pathCache)
-  await message.update({content: settings.livestreams.description, embeds: [makeLivestreamsEmbed(userData, guildLastLiveData, {taskConfig: settings.livestreams, formatUserEmoji})]})
+  const embed = makeLivestreamsEmbed(userData, guildLastLiveData, {taskConfig: settings.livestreams, formatUserEmoji})
+
+  // If our embed's description text is too long, it can't be an embed. We'll use the main post description instead.
+  if (embed.data.description.length > 4000) {
+    await message.update({content: `${settings.livestreams.description}\n${embed.data.description}`, embeds: []})
+  }
+  else {
+    await message.update({content: settings.livestreams.description, embeds: [embed]})
+  }
   if (n === 0) logger.log`Initial update of the livestreams list`
 }
 
